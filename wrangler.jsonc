@@ -3,7 +3,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   // Must match the Worker name shown in the Cloudflare dashboard (Workers Builds requirement).
-  "name": "new-zips",
+  "name": "zips",
   "compatibility_date": "2025-09-01",
   "assets": {
     "directory": "./public"
