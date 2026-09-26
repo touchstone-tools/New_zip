@@ -73,7 +73,7 @@ The service worker loads app files **network-first**: while the server is reacha
 
 * Each result card shows the client name with a **Material icon** for every field: ZIP Code (`pin_drop`), State (`map`), Timings (`schedule`) and Transfer to Preset (`phone_forwarded`). The Transfer to Preset field is highlighted.
 * The icons are the official Material Design SVG paths (Apache 2.0), included as an inline sprite in `index.html`. There's no icon-font download, and they work offline.
-* A floating **Required Action Checklist** (`assignment_late`) sits at the bottom right with the CRM / address-verification disclaimer.
+* A floating **Required Action Checklist** (`assignment_late`) sits at the bottom left with the CRM / address-verification disclaimer.
   * The minimize button shrinks it to a small "Checklist" button, and clicking that brings it back.
   * It starts minimized on phones.
   * It gives a short nudge each time a ZIP is verified.

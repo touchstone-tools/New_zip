@@ -15,7 +15,7 @@
  */
 'use strict';
 
-var VERSION = 'zip-checker-shell-v1.2.0';
+var VERSION = 'zip-checker-shell-v1.3.0';
 var NETWORK_TIMEOUT_MS = 3000;
 var SHELL = [
   './',

@@ -375,9 +375,9 @@ kbd {
 /* Floating "Required Action Checklist" notice                         */
 /* ------------------------------------------------------------------ */
 .notice {
-  position: fixed; right: clamp(12px, 2vw, 24px); bottom: clamp(12px, 2vw, 24px); z-index: 50;
+  position: fixed; left: clamp(12px, 2vw, 24px); bottom: clamp(12px, 2vw, 24px); z-index: 50;
   width: min(380px, calc(100vw - 24px));
-  display: flex; flex-direction: column; align-items: flex-end;
+  display: flex; flex-direction: column; align-items: flex-start;
   pointer-events: none;
 }
 .notice > * { pointer-events: auto; }

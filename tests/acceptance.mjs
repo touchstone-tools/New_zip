@@ -256,8 +256,8 @@ try {
     assert.equal(await page.$('footer'), null);
     assert.equal(await page.textContent('#notice-title'), 'Required Action Checklist');
     assert.match(await page.textContent('.notice__body'), /^\s*Disclaimer: Before transferring the call.*Project Sunroof.*before proceeding\.\s*$/s);
-    const box = await page.$eval('#notice', (n) => { const r = n.getBoundingClientRect(); return { right: innerWidth - r.right, bottom: innerHeight - r.bottom }; });
-    assert.ok(box.right < 40 && box.bottom < 40, 'anchored bottom-right');
+    const box = await page.$eval('#notice', (n) => { const r = n.getBoundingClientRect(); return { left: r.left, bottom: innerHeight - r.bottom }; });
+    assert.ok(box.left < 40 && box.bottom < 40, 'anchored bottom-left');
     await page.click('#notice-collapse');
     assert.equal(await page.getAttribute('#notice', 'data-collapsed'), 'true');
     assert.ok(await page.isVisible('#notice-expand'));
