@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://opensheet.elk.sh https://docs.google.com https://*.googleusercontent.com; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>ZIP Checker — ZIP Verification</title>
+  <meta name="description" content="Instant ZIP code verification for call-center agents.">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="color-scheme" content="light">
+
+  <!-- Warm up the data connection before app.js even runs. -->
+  <link rel="preconnect" href="https://opensheet.elk.sh" crossorigin>
+  <link rel="dns-prefetch" href="https://opensheet.elk.sh">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#zip-input">Skip to ZIP search</a>
+
+  <div class="bg" aria-hidden="true">
+    <span class="blob blob--1"></span>
+    <span class="blob blob--2"></span>
+    <span class="blob blob--3"></span>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <h1 class="title" aria-label="ZIP Checker">
+        <span class="g-blue">Z</span><span class="g-red">I</span><span class="g-yellow">P</span>
+        <span class="g-blue">C</span><span class="g-green">h</span><span class="g-red">e</span><span class="g-blue">c</span><span class="g-yellow">k</span><span class="g-green">e</span><span class="g-red">r</span>
+      </h1>
+      <p class="subtitle">ZIP Verification</p>
+    </div>
+
+    <section class="db-status" id="db-status" data-state="loading" aria-label="ZIP database status">
+      <span class="db-status__dot" aria-hidden="true"></span>
+      <div class="db-status__text">
+        <strong class="db-status__label" id="db-label">Initializing ZIP Database…</strong>
+        <span class="db-status__meta" id="db-meta"></span>
+      </div>
+      <button type="button" class="icon-btn" id="db-refresh" aria-label="Refresh ZIP database now" title="Refresh ZIP database">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      </button>
+    </section>
+  </header>
+
+  <main class="layout" id="main">
+    <div class="col-main">
+      <section class="card search-card" aria-labelledby="search-heading">
+        <h2 id="search-heading" class="section-title">ZIP Search</h2>
+        <form class="search" id="search-form" role="search" autocomplete="off" novalidate>
+          <label for="zip-input" class="search__label">Enter 5-digit ZIP code</label>
+          <div class="search__row">
+            <div class="search__field">
+              <svg class="search__icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+              <input
+                id="zip-input"
+                class="search__input"
+                name="zip"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]{5}"
+                maxlength="10"
+                placeholder="e.g. 63010"
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+                enterkeyhint="search"
+                aria-describedby="search-hint"
+                autofocus>
+            </div>
+            <button type="submit" class="btn btn--primary" id="search-btn">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <span>Search</span>
+            </button>
+            <button type="button" class="btn btn--ghost" id="clear-btn">Clear</button>
+          </div>
+          <p class="search__hint" id="search-hint">
+            <kbd>Enter</kbd> search &nbsp;·&nbsp; <kbd>Esc</kbd> clear &nbsp;·&nbsp; results appear as soon as 5 digits are typed
+          </p>
+        </form>
+      </section>
+
+      <section class="results" id="results" aria-label="Search results" tabindex="-1">
+        <div class="placeholder" id="placeholder">
+          <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+          <p>Type a ZIP code to check client coverage.</p>
+        </div>
+      </section>
+
+      <!-- Screen-reader summary of each search (kept short on purpose). -->
+      <div class="sr-only" id="sr-status" role="status" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <aside class="col-side card clocks-card" aria-labelledby="clocks-heading">
+      <h2 id="clocks-heading" class="section-title">Live Timezones</h2>
+
+      <div class="clock clock--featured" data-tz="Asia/Karachi" data-abbr="PKT">
+        <div class="clock__head">
+          <span class="clock__label">Pakistan (PKT)</span>
+          <span class="clock__abbr" aria-hidden="true">PKT</span>
+        </div>
+        <time class="clock__time">--:--:--</time>
+        <span class="clock__date"></span>
+      </div>
+
+      <h3 class="clocks-sub">United States</h3>
+      <div class="clock" data-tz="America/Los_Angeles">
+        <div class="clock__head">
+          <span class="clock__label">Pacific (PST/PDT)</span>
+          <span class="clock__abbr" aria-hidden="true"></span>
+        </div>
+        <time class="clock__time">--:--:--</time>
+        <span class="clock__date"></span>
+      </div>
+      <div class="clock" data-tz="America/Denver">
+        <div class="clock__head">
+          <span class="clock__label">Mountain (MST/MDT)</span>
+          <span class="clock__abbr" aria-hidden="true"></span>
+        </div>
+        <time class="clock__time">--:--:--</time>
+        <span class="clock__date"></span>
+      </div>
+      <div class="clock" data-tz="America/Chicago">
+        <div class="clock__head">
+          <span class="clock__label">Central (CST/CDT)</span>
+          <span class="clock__abbr" aria-hidden="true"></span>
+        </div>
+        <time class="clock__time">--:--:--</time>
+        <span class="clock__date"></span>
+      </div>
+      <div class="clock" data-tz="America/New_York">
+        <div class="clock__head">
+          <span class="clock__label">Eastern (EST/EDT)</span>
+          <span class="clock__abbr" aria-hidden="true"></span>
+        </div>
+        <time class="clock__time">--:--:--</time>
+        <span class="clock__date"></span>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <span>Data source: Google Sheet “AllZips” (read-only)</span>
+  </footer>
+
+  <!-- Result card template: filled with textContent only (never innerHTML). -->
+  <template id="tpl-card">
+    <article class="result-card">
+      <header class="result-card__head">
+        <span class="result-card__num"></span>
+        <div class="result-card__client-wrap">
+          <span class="result-card__eyebrow">Good to Go On</span>
+          <h3 class="result-card__client"></h3>
+        </div>
+        <span class="badge badge--ok">✓ Covered</span>
+      </header>
+      <dl class="result-card__grid">
+        <div class="field"><dt>ZIP Code</dt><dd class="f-zip mono"></dd></div>
+        <div class="field"><dt>State</dt><dd class="f-state"></dd></div>
+        <div class="field field--wide"><dt>Timings</dt><dd class="f-timings"></dd></div>
+        <div class="field field--wide field--preset"><dt>Transfer to Preset</dt><dd class="f-preset"></dd></div>
+      </dl>
+    </article>
+  </template>
+</body>
+</html>
