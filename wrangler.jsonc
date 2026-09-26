@@ -1,0 +1,11 @@
+// Cloudflare Workers (static assets only — no server code).
+// `npx wrangler deploy` uploads ./public and serves it from Cloudflare's edge.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Must match the Worker name shown in the Cloudflare dashboard (Workers Builds requirement).
+  "name": "new-zip",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./public"
+  }
+}

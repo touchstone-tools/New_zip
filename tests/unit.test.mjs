@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 import { BASE_ROWS, toCSV } from './fixtures.mjs';
 
 const require = createRequire(import.meta.url);
-const Z = require('../data-worker.js');
+const Z = require('../public/data-worker.js');
 
 test('normalizeZip keeps ZIPs as 5-digit strings with leading zeros', () => {
   assert.equal(Z.normalizeZip('00501'), '00501');

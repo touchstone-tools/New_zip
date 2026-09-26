@@ -31,24 +31,41 @@ Google Sheet ─► OpenSheet (primary) / Google gviz CSV (fallback)
 
 | File | Purpose |
 |---|---|
-| `index.html` | Semantic app shell, Material icon sprite, result-card `<template>`, checklist notice, CSP |
-| `styles.css` | Glass-style responsive UI (no web fonts, no `backdrop-filter`, respects reduced motion) |
-| `app.js` | UI controller: search hot path, rendering, status indicator, clocks, keyboard, config |
-| `data-worker.js` | Data engine (Web Worker). Fetch, normalize, index, IndexedDB, change detection. Also runs on the main thread if Workers are unavailable |
-| `sw.js` | Service worker. Caches the **app shell only**; the ZIP data is never cached here |
-| `manifest.json`, `icons/` | PWA metadata and icons |
+| `public/index.html` | Semantic app shell, Material icon sprite, result-card `<template>`, checklist notice, CSP |
+| `public/styles.css` | Glass-style responsive UI (no web fonts, no `backdrop-filter`, respects reduced motion) |
+| `public/app.js` | UI controller: search hot path, rendering, status indicator, clocks, keyboard, config |
+| `public/data-worker.js` | Data engine (Web Worker). Fetch, normalize, index, IndexedDB, change detection. Also runs on the main thread if Workers are unavailable |
+| `public/sw.js` | Service worker. Caches the **app shell only**; the ZIP data is never cached here |
+| `public/manifest.json`, `public/icons/` | PWA metadata and icons |
+| `public/_headers` | Cloudflare response headers (`sw.js` always revalidated, `nosniff`) |
+| `wrangler.jsonc` | Cloudflare Workers config: serves `./public` as static assets |
 | `tests/` | Node unit tests + Playwright end-to-end acceptance tests |
 
 ## Deploy
 
-Upload the repository root to any static host (GitHub Pages, Netlify, Cloudflare Pages, S3, nginx, IIS, and so on). No build or source changes are needed.
-Use HTTPS, because service workers need it (`localhost` is exempt).
+Only the `public/` folder is the website. Tests, `package.json` and this README are never published.
+
+### Cloudflare Workers (Git integration)
+
+`wrangler.jsonc` tells Cloudflare to serve `./public`, so no build step is needed.
+
+1. In **Workers & Pages → your Worker → Settings → Build**, use:
+   * **Build command:** *(leave empty)*
+   * **Deploy command:** `npx wrangler deploy`
+   * **Root directory:** `/`
+2. The `name` in `wrangler.jsonc` must match the Worker name shown in the dashboard. It is currently `new-zip`; change it if your Worker is named differently.
+3. Cloudflare builds the **production branch** you selected (usually `main`). Merge this branch into it, or pick this branch in the build settings.
+
+From your own machine: `npx wrangler login` and then `npm run deploy`.
+
+### Any other static host
+
+Upload the contents of `public/` (GitHub Pages, Netlify, S3, nginx, IIS, and so on). Use HTTPS, because service workers need it (`localhost` is exempt).
 
 Local preview:
 
 ```bash
-python3 -m http.server 8080      # or: npm start
-# open http://localhost:8080
+npm start            # serves ./public on http://localhost:8080
 ```
 
 The service worker loads app files **network-first**: while the server is reachable, every load gets the latest deployed files, and the cached copy is used only when the network is down or takes longer than 3 s. When a new service worker takes over while the agent is idle, the page reloads itself once. Bumping `VERSION` in `sw.js` also clears out old cached files.

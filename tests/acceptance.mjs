@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { BASE_ROWS, bigDataset, toCSV } from './fixtures.mjs';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
 // Simulates a new deployment: when set, served index.html gets this marker.

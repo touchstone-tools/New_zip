@@ -1,0 +1,8 @@
+# Cloudflare static-asset headers
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+
+# The service worker must always be revalidated so new deployments are picked up.
+/sw.js
+  Cache-Control: no-cache
