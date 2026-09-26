@@ -31,7 +31,7 @@ Google Sheet ─► OpenSheet (primary) / Google gviz CSV (fallback)
 
 | File | Purpose |
 |---|---|
-| `index.html` | Semantic app shell, result-card `<template>`, CSP |
+| `index.html` | Semantic app shell, Material icon sprite, result-card `<template>`, checklist notice, CSP |
 | `styles.css` | Glass-style responsive UI (no web fonts, no `backdrop-filter`, respects reduced motion) |
 | `app.js` | UI controller: search hot path, rendering, status indicator, clocks, keyboard, config |
 | `data-worker.js` | Data engine (Web Worker). Fetch, normalize, index, IndexedDB, change detection. Also runs on the main thread if Workers are unavailable |
@@ -68,6 +68,16 @@ When you ship a new version, you can bump `VERSION` in `sw.js` so every client r
 ### Status indicator
 
 `Initializing ZIP Database…` → `ZIP Database Ready` / `Updating Data…` / `Offline — Using Cached Data` / `Update Failed — Using Cached Data` / `Unable to load ZIP database`, plus **Updated:** time and **Records:** count.
+
+## Result cards & checklist notice
+
+* Each result card shows the client name with a **Material icon** for every field: ZIP Code (`pin_drop`), State (`map`), Timings (`schedule`) and Transfer to Preset (`phone_forwarded`). The Transfer to Preset field is highlighted.
+* The icons are the official Material Design SVG paths (Apache 2.0), included as an inline sprite in `index.html`. There's no icon-font download, and they work offline.
+* A floating **Required Action Checklist** (`assignment_late`) sits at the bottom right with the CRM / address-verification disclaimer.
+  * The minimize button shrinks it to a small "Checklist" button, and clicking that brings it back.
+  * It starts minimized on phones.
+  * It gives a short nudge each time a ZIP is verified.
+  * The page adds bottom padding so the notice never permanently hides content.
 
 ## Keyboard
 

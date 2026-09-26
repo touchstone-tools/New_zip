@@ -202,12 +202,8 @@
   function buildCard(m, i, total) {
     var node = cardTpl.content.firstElementChild.cloneNode(true);
     var num = node.querySelector('.result-card__num');
-    if (total > 1) {
-      num.textContent = String(i + 1);
-      num.setAttribute('aria-label', 'Client ' + (i + 1) + ' of ' + total);
-    } else {
-      num.remove();
-    }
+    if (total > 1) num.textContent = '\u00b7 ' + (i + 1) + ' of ' + total;
+    else num.remove();
     setField(node.querySelector('.result-card__client'), m.client);
     setField(node.querySelector('.f-zip'), m.zip);
     setField(node.querySelector('.f-state'), m.state);
@@ -234,6 +230,7 @@
     frag.appendChild(grid);
     show(frag);
     shownZip = zip;
+    nudgeNotice();
 
     var names = [];
     for (var j = 0; j < n; j++) names.push(matches[j].client || 'N/A');
@@ -298,6 +295,43 @@
       : 'Initializing ZIP Database… You can start typing — the search runs as soon as it is ready.'));
     show(p);
   }
+
+  /* ------------------------------------------------------------------ */
+  /* Floating "Required Action Checklist" notice                         */
+  /* ------------------------------------------------------------------ */
+  var notice = $('notice');
+  var noticeExpand = $('notice-expand');
+  var noticeCollapse = $('notice-collapse');
+
+  function setNoticeCollapsed(collapsed, moveFocus) {
+    notice.setAttribute('data-collapsed', collapsed ? 'true' : 'false');
+    noticeExpand.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    noticeCollapse.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    if (moveFocus) (collapsed ? noticeExpand : noticeCollapse).focus();
+    syncNoticeSpace();
+  }
+
+  /* Reserve page space under the notice so it never permanently hides content. */
+  function syncNoticeSpace() {
+    var h = notice.getBoundingClientRect().height;
+    document.body.style.paddingBottom = Math.ceil(h + 28) + 'px';
+  }
+
+  function nudgeNotice() {
+    notice.classList.remove('is-nudged');
+    void notice.offsetWidth; // restart the animation
+    notice.classList.add('is-nudged');
+  }
+
+  notice.addEventListener('animationend', function (e) {
+    if (e.target === notice && e.animationName === 'nudge') notice.classList.remove('is-nudged');
+  });
+  noticeCollapse.addEventListener('click', function () { setNoticeCollapsed(true, true); });
+  noticeExpand.addEventListener('click', function () { setNoticeCollapsed(false, true); });
+  // Start minimized on small screens where the panel would cover the results.
+  setNoticeCollapsed(window.matchMedia('(max-width: 640px)').matches, false);
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(syncNoticeSpace).observe(notice);
+  else window.addEventListener('resize', syncNoticeSpace);
 
   /* ------------------------------------------------------------------ */
   /* Database status indicator                                           */

@@ -244,6 +244,23 @@ try {
     assert.notEqual(await page.textContent('.clock__time'), t1, 'clocks tick every second');
   });
 
+  await step('Card icons + floating checklist notice (minimize / restore), footer removed', async () => {
+    await searchZip(page, '63010');
+    assert.equal(await page.$$eval('.result-card .field__icon svg use', (n) => n.length), 4, 'icons for ZIP, State, Timings, Preset');
+    assert.equal(await page.$('footer'), null);
+    assert.equal(await page.textContent('#notice-title'), 'Required Action Checklist');
+    assert.match(await page.textContent('.notice__body'), /^\s*Disclaimer: Before transferring the call.*Project Sunroof.*before proceeding\.\s*$/s);
+    const box = await page.$eval('#notice', (n) => { const r = n.getBoundingClientRect(); return { right: innerWidth - r.right, bottom: innerHeight - r.bottom }; });
+    assert.ok(box.right < 40 && box.bottom < 40, 'anchored bottom-right');
+    await page.click('#notice-collapse');
+    assert.equal(await page.getAttribute('#notice', 'data-collapsed'), 'true');
+    assert.ok(await page.isVisible('#notice-expand'));
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'notice-expand');
+    await page.click('#notice-expand');
+    assert.ok(await page.isVisible('.notice__body'));
+    await page.focus('#zip-input');
+  });
+
   await step('No console/page errors during the session', async () => {
     assert.deepEqual(pageErrors.map(String), []);
   });

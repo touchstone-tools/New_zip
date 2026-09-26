@@ -14,7 +14,7 @@
  */
 'use strict';
 
-var VERSION = 'zip-checker-shell-v1.0.0';
+var VERSION = 'zip-checker-shell-v1.1.0';
 var SHELL = [
   './',
   './index.html',

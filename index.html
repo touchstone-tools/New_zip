@@ -22,6 +22,18 @@
   <script src="app.js" defer></script>
 </head>
 <body>
+  <!-- Material Design icons (Apache 2.0) as an inline sprite: no font download, works offline. -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="mi-pin-drop" viewBox="0 0 24 24"><path d="M18 8c0-3.31-2.69-6-6-6S6 4.69 6 8c0 4.5 6 11 6 11s6-6.5 6-11zm-8 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zM5 20v2h14v-2H5z"/></symbol>
+    <symbol id="mi-map" viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></symbol>
+    <symbol id="mi-schedule" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></symbol>
+    <symbol id="mi-phone-forwarded" viewBox="0 0 24 24"><path d="M18 11l5-5-5-5v3h-4v4h4v3zm2 4.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.21c.28-.26.36-.65.25-1C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1z"/></symbol>
+    <symbol id="mi-business" viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></symbol>
+    <symbol id="mi-check-circle" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></symbol>
+    <symbol id="mi-assignment-late" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 15h-2v-2h2v2zm0-4h-2V8h2v6zm-1-9c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></symbol>
+    <symbol id="mi-minimize" viewBox="0 0 24 24"><path d="M6 19h12v2H6z"/></symbol>
+  </svg>
+
   <a class="skip-link" href="#zip-input">Skip to ZIP search</a>
 
   <div class="bg" aria-hidden="true">
@@ -147,26 +159,56 @@
     </aside>
   </main>
 
-  <footer class="footer">
-    <span>Data source: Google Sheet “AllZips” (read-only)</span>
-  </footer>
+  <!-- Floating compliance notice (bottom-right). Collapsible; not a live region. -->
+  <aside class="notice" id="notice" aria-labelledby="notice-title" data-collapsed="false">
+    <button type="button" class="notice__pill" id="notice-expand" aria-controls="notice-panel" aria-expanded="false" aria-label="Show Required Action Checklist">
+      <svg class="mi" aria-hidden="true" focusable="false"><use href="#mi-assignment-late"/></svg>
+      <span>Checklist</span>
+    </button>
+    <div class="notice__panel" id="notice-panel">
+      <header class="notice__head">
+        <span class="notice__icon" aria-hidden="true"><svg class="mi"><use href="#mi-assignment-late"/></svg></span>
+        <h2 class="notice__title" id="notice-title">Required Action Checklist</h2>
+        <button type="button" class="notice__min" id="notice-collapse" aria-controls="notice-panel" aria-expanded="true" aria-label="Minimize Required Action Checklist" title="Minimize">
+          <svg class="mi" aria-hidden="true" focusable="false"><use href="#mi-minimize"/></svg>
+        </button>
+      </header>
+      <p class="notice__body">
+        <strong>Disclaimer:</strong> Before transferring the call, ensure that all customer information is accurately updated in the CRM system. Verify and analyze the provided address by checking reliable sources such as Google Maps, Zillow, or Project Sunroof. In case of any confusion, discrepancies, or concerns, please contact your supervisor for further guidance before proceeding.
+      </p>
+    </div>
+  </aside>
 
   <!-- Result card template: filled with textContent only (never innerHTML). -->
   <template id="tpl-card">
     <article class="result-card">
       <header class="result-card__head">
-        <span class="result-card__num"></span>
+        <span class="result-card__avatar" aria-hidden="true">
+          <svg class="mi"><use href="#mi-business"/></svg>
+        </span>
         <div class="result-card__client-wrap">
-          <span class="result-card__eyebrow">Good to Go On</span>
+          <span class="result-card__eyebrow">Good to Go On <span class="result-card__num"></span></span>
           <h3 class="result-card__client"></h3>
         </div>
-        <span class="badge badge--ok">✓ Covered</span>
+        <span class="badge badge--ok"><svg class="mi" aria-hidden="true" focusable="false"><use href="#mi-check-circle"/></svg>Covered</span>
       </header>
       <dl class="result-card__grid">
-        <div class="field"><dt>ZIP Code</dt><dd class="f-zip mono"></dd></div>
-        <div class="field"><dt>State</dt><dd class="f-state"></dd></div>
-        <div class="field field--wide"><dt>Timings</dt><dd class="f-timings"></dd></div>
-        <div class="field field--wide field--preset"><dt>Transfer to Preset</dt><dd class="f-preset"></dd></div>
+        <div class="field field--zip">
+          <span class="field__icon" aria-hidden="true"><svg class="mi"><use href="#mi-pin-drop"/></svg></span>
+          <div class="field__body"><dt>ZIP Code</dt><dd class="f-zip mono"></dd></div>
+        </div>
+        <div class="field field--state">
+          <span class="field__icon" aria-hidden="true"><svg class="mi"><use href="#mi-map"/></svg></span>
+          <div class="field__body"><dt>State</dt><dd class="f-state"></dd></div>
+        </div>
+        <div class="field field--wide field--timings">
+          <span class="field__icon" aria-hidden="true"><svg class="mi"><use href="#mi-schedule"/></svg></span>
+          <div class="field__body"><dt>Timings</dt><dd class="f-timings"></dd></div>
+        </div>
+        <div class="field field--wide field--preset">
+          <span class="field__icon" aria-hidden="true"><svg class="mi"><use href="#mi-phone-forwarded"/></svg></span>
+          <div class="field__body"><dt>Transfer to Preset</dt><dd class="f-preset"></dd></div>
+        </div>
       </dl>
     </article>
   </template>
