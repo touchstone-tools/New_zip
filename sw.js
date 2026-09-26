@@ -8,13 +8,15 @@
  * (OpenSheet / Google) pass straight through to the network, and the data
  * layer (IndexedDB, stale-while-revalidate) decides what is fresh.
  *
- * Strategy for shell files: stale-while-revalidate — serve from cache
- * immediately, refresh the cached copy in the background. Bump VERSION to
- * force an atomic refresh of every shell file.
+ * Strategy for shell files: NETWORK-FIRST with a short timeout. When the
+ * server is reachable agents always get the latest deployed files on the
+ * very next load; the cache is only used when the network is down or slow
+ * (> NETWORK_TIMEOUT_MS). Bump VERSION to drop old caches.
  */
 'use strict';
 
-var VERSION = 'zip-checker-shell-v1.1.0';
+var VERSION = 'zip-checker-shell-v1.2.0';
+var NETWORK_TIMEOUT_MS = 3000;
 var SHELL = [
   './',
   './index.html',
@@ -58,26 +60,42 @@ self.addEventListener('fetch', function (event) {
   // Normalise navigations (any query string) to the cached shell document.
   var cacheKey = isNavigation ? './index.html' : req;
 
-  event.respondWith(
-    caches.open(VERSION).then(function (cache) {
-      return cache.match(cacheKey, { ignoreSearch: isNavigation }).then(function (cached) {
-        var network = fetch(req).then(function (res) {
-          if (res && res.ok && res.type === 'basic' && !res.redirected) {
-            cache.put(cacheKey, res.clone());
-          }
-          return res;
-        });
+  event.respondWith(caches.open(VERSION).then(function (cache) {
+    var network = fetch(req, { cache: 'no-cache' }).then(function (res) {
+      if (res && res.ok && res.type === 'basic' && !res.redirected) {
+        cache.put(cacheKey, res.clone());
+      }
+      return res;
+    });
+    // Keep the SW alive until the cache write finishes, even if we answered from cache.
+    event.waitUntil(network.catch(function () {}));
 
-        if (cached) {
-          // Revalidate in the background; ignore failures (offline).
-          event.waitUntil(network.catch(function () {}));
-          return cached;
-        }
-        return network.catch(function () {
-          if (isNavigation) return cache.match('./index.html');
-          return Response.error();
+    var fromCache = function () {
+      return cache.match(cacheKey, { ignoreSearch: isNavigation });
+    };
+
+    return new Promise(function (resolve) {
+      var settled = false;
+      var finish = function (res) { if (!settled && res) { settled = true; resolve(res); } };
+
+      // Slow network: fall back to the cached copy after a short wait.
+      var timer = setTimeout(function () {
+        fromCache().then(function (cached) { if (cached) finish(cached); });
+      }, NETWORK_TIMEOUT_MS);
+
+      network.then(function (res) {
+        clearTimeout(timer);
+        if (res.ok) { finish(res); return; }
+        // Server error: prefer a good cached copy if there is one.
+        return fromCache().then(function (cached) { finish(cached || res); });
+      }).catch(function () {
+        clearTimeout(timer);
+        fromCache().then(function (cached) {
+          if (cached) finish(cached);
+          else if (isNavigation) cache.match('./index.html').then(function (c) { finish(c || Response.error()); });
+          else finish(Response.error());
         });
       });
-    })
-  );
+    });
+  }));
 });

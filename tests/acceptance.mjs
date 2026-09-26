@@ -16,6 +16,8 @@ import { BASE_ROWS, bigDataset, toCSV } from './fixtures.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
+// Simulates a new deployment: when set, served index.html gets this marker.
+const deploy = { marker: '' };
 function serve() {
   const server = http.createServer((req, res) => {
     let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
@@ -23,6 +25,10 @@ function serve() {
     const file = path.join(ROOT, p);
     if (!file.startsWith(ROOT) || !fs.existsSync(file)) { res.writeHead(404); res.end(); return; }
     res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
+    if (deploy.marker && file.endsWith('index.html')) {
+      res.end(fs.readFileSync(file, 'utf8').replace('<body>', `<body data-deploy="${deploy.marker}">`));
+      return;
+    }
     fs.createReadStream(file).pipe(res);
   });
   return new Promise((r) => server.listen(0, '127.0.0.1', () => r(server)));
@@ -409,6 +415,12 @@ try {
     await p.waitForFunction(() => document.getElementById('db-status').dataset.state === 'offline');
     await c.setOffline(false);
     net.mode = 'ok';
+    // New deployment is picked up on the very next reload (network-first shell).
+    deploy.marker = 'v2';
+    await p.reload();
+    await p.waitForFunction(() => !!navigator.serviceWorker.controller);
+    assert.equal(await p.getAttribute('body', 'data-deploy'), 'v2', 'fresh index.html served while online');
+    deploy.marker = '';
     await c.close();
   });
 

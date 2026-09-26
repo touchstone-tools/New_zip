@@ -603,6 +603,14 @@
   startClocks();
 
   if (CONFIG.serviceWorker && 'serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    // A new deployment took control: reload once so the new files are used,
+    // but only while the agent is idle (never mid-search).
+    var hadController = !!navigator.serviceWorker.controller;
+    var reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadController || reloaded) { hadController = true; return; }
+      if (!input.value && !shownZip) { reloaded = true; window.location.reload(); }
+    });
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('sw.js').catch(function (err) {
         if (window.console) console.warn('[ZIP Checker] Service worker registration failed:', err);

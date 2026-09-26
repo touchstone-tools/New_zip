@@ -51,7 +51,7 @@ python3 -m http.server 8080      # or: npm start
 # open http://localhost:8080
 ```
 
-When you ship a new version, you can bump `VERSION` in `sw.js` so every client refreshes all shell files at once. Without a bump, files still update on their own via stale-while-revalidate, one reload later.
+The service worker loads app files **network-first**: while the server is reachable, every load gets the latest deployed files, and the cached copy is used only when the network is down or takes longer than 3 s. When a new service worker takes over while the agent is idle, the page reloads itself once. Bumping `VERSION` in `sw.js` also clears out old cached files.
 
 ## Data behaviour
 
